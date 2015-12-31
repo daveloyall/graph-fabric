@@ -47,10 +47,14 @@ universe
   (random-slot 3))
 
 (defun random-slot (n)
-  (nth (random n) '('a 'b 'c 'd 'e 'f 'g 'h 'i 'j 'k 'l 'm 'n 'o 'p 'q 'r 's 't 'u 'v 'w 'x 'y 'z)))
+  (nth (random n) '(a b c d e f g h i j k l m n o p q r s t u v w x y z)))
 
 (defmethod push-cell ((dst cell3) src slot)
-  (setf (slot-value dst slot) src))
+  ;;; if there is something in dst, push to extra instead.
+  (if (slot-value dst slot)
+      (push (slot-value dst 'extra) src)
+      (setf (slot-value dst slot) src)))
+
 
 (defmethod push-cell :after ((cell cell3) src slot)
   (print-cell cell))

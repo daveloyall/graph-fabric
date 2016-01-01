@@ -10,25 +10,28 @@
    (extra :initform ()))
   )
 
+(defvar universe)
+(defvar bob)
+
+
 (setf universe ())
 
 (setf bob (make-instance 'cell3))
 (push (make-instance 'cell3) universe)
+(push (make-instance 'cell3) universe)
+(remove-nth 1 universe)
 
-(defun remove-nth (n list)
+universe
+(defun delete-nth (n list)
   (delete (setf (nth n list) (gensym)) list))
 
-(defun move-nth (n src dst)
-  (let (thing (nth n src))
-    ;here we put a thing in dst... dst is a place?
-    ;(?? ...)
 
-    ;and here we delete from the src.
-    (delete-nth n list)
-    ))
+(defun move (dst dst-slot src-place)
+  (push-cell dst dst-slot src-place)
+  (setf src-place nil))
 
 
-(delete-nth 4 universe)
+;(delete-nth 4 universe)
 
 (push bob universe)
 
@@ -49,11 +52,11 @@ universe
 (defun random-slot (n)
   (nth (random n) '(a b c d e f g h i j k l m n o p q r s t u v w x y z)))
 
-(defmethod push-cell ((dst cell3) src slot)
+(defmethod push-cell ((dst cell3) src dst-slot)
   ;;; if there is something in dst, push to extra instead.
-  (if (slot-value dst slot)
+  (if (slot-value dst dst-slot)
       (push (slot-value dst 'extra) src)
-      (setf (slot-value dst slot) src)))
+      (setf (slot-value dst dst-slot) src)))
 
 
 (defmethod push-cell :after ((cell cell3) src slot)

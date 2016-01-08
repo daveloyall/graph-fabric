@@ -15,30 +15,32 @@
 	(round (sqrt n))
 	0)))
 
-(with-open-file (fb0
-		 ;"/dev/fb0" ;;;This is the linux framebuffer, basically your screen's memory.
-                             ;;; If you write directly to it, what is displayed on your screen
-		             ;;; changes immediately.
-		 "~/scratch/sine5.data" ;;;Gimp can open raw bitmap files. This one is RGB
-		                        ;;; data, 8 bits each.
-                     :direction :IO
-                     :if-does-not-exist :create
-		     :if-exists :supersede
-		     :element-type '(unsigned-byte 8)) ; 8 bits, we read or write a byte at a time.
-  (loop for y from 0 to 479 by 1 do 
-       (loop for x from 0 to 639 by 1 do
-	    
-	  ;; (print "x=") (princ x)
-	  ;; (print "y=") (princ y)
-	  ;; (print "coords=") (princ (float-cart-coords x y))
-	    (file-position fb0 (coords x y))
-	    (write-byte #x10 fb0)
+(defmacro each-pixel (&rest body)
+  `(with-open-file (fb0
+		   "/dev/fb0" ;;;This is the linux framebuffer, basically your screen's memory.
+                              ;;; If you write directly to it, what is displayed on your screen
+		              ;;; changes immediately.
+		   ;"~/scratch/sine5.data" ;;;Gimp can open raw bitmap files. This one is RGB
+		                           ;;; data, 8 bits each.
+		   :direction :IO
+		   :if-does-not-exist :create
+		   :if-exists :supersede
+		   :element-type '(unsigned-byte 8)) ; 8 bits, we read or write a byte at a time.
+     (loop for y from 0 to 479 by 1 do 
+	  (loop for x from 0 to 639 by 1 do
+	       
+	     ;; (print "x=") (princ x)
+	     ;; (print "y=") (princ y)
+	     ;; (print "coords=") (princ (float-cart-coords x y))
+	       (file-position fb0 (coords x y))
+	       (progn ,@body)))))
+
+(each-pixel (write-byte #x10 fb0)
 	    (write-byte (radius-fall (abs (-
 					   (sin (first (coords-cart-float x y)))
 					   (second (coords-cart-float x y))))
 				     ) fb0)
-	    (write-byte #x10 fb0)))
-  )
+	    (write-byte #x10 fb0))
 
 ;;;an alternative radius-fall function.
 (defun radius-fall (x)
@@ -51,6 +53,9 @@
 
 
 ;;Here's a function to clear the screen.
+;;; I like to bind a call to this to an emacs keyboard macro.
+;;; The macro actually switches to the slime repl, types the call,
+;;; then switches back...
 (defun wipe (r g b)
   (with-open-file (fb0 "/dev/fb0"
 		       :direction :IO

@@ -2,6 +2,10 @@
 
 (in-package #:blitter)
 
+(defconstant *fb-x* 1024)
+(defconstant *fb-y* 768)
+(defconstant *fb-bytes-per-pixel* 3)
+
 (defun coords (x y)
   (round (* 3 (+ x (* 640 y)))))
 
@@ -26,8 +30,8 @@
 		   :if-does-not-exist :create
 		   :if-exists :supersede
 		   :element-type '(unsigned-byte 8)) ; 8 bits, we read or write a byte at a time.
-     (loop for y from 0 to 479 by 1 do 
-	  (loop for x from 0 to 639 by 1 do
+     (loop for y from 0 to (- *fb-y* 1) by 1 do 
+	  (loop for x from 0 to (- *fb-x* 1) by 1 do
 	       
 	     ;; (print "x=") (princ x)
 	     ;; (print "y=") (princ y)
@@ -62,7 +66,7 @@
 		       :if-does-not-exist :ERROR
 		       :element-type '(unsigned-byte 8))
     (file-position fb0 :start)
-    (loop for i from 1 to (* 640 480) do
+    (loop for i from 1 to (* *fb-x* *fb-y*) do
 	 (write-byte b fb0)
 	 (write-byte g fb0)
 	 (write-byte r fb0))))
